@@ -1,3 +1,4 @@
+#define  _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -12,11 +13,11 @@ using namespace std;
 const int NEWS_SIZE = 6183;
 const int USER_SIZE  = 10002;
 const int DATA_SIZE = 116225;
-const int RECOMMEND_SIZE = 5;
+const int RECOMMEND_SIZE = 10;
 const int RECOMMEND_USER = 80;
 vector<int>ve[USER_SIZE];
 
-int cuv[NEWS_SIZE][NEWS_SIZE];
+double cuv[NEWS_SIZE][NEWS_SIZE];
 double similarity[NEWS_SIZE][NEWS_SIZE];
 double ranks[NEWS_SIZE];
 
@@ -36,7 +37,8 @@ bool cmp(int a, int b) {
 int main () {
 
 	memset(cuv, 0, sizeof(cuv));
-	memset(similarity, 0, sizeof(similarity));
+	memset(similarity, 0.0, sizeof(similarity));
+	
 	//get news 
 	freopen ("title", "r", stdin);
 	map<string, int> mapNews;
@@ -67,6 +69,7 @@ int main () {
 
 	// user-news table
 	int item[NEWS_SIZE];
+	memset(item, 0, sizeof(item));
 	for (int i = 1; i < USER_SIZE; i++) {
 		int size = ve[i].size();
 		for (int j = 0; j < size; j++) {
@@ -74,7 +77,7 @@ int main () {
 			item[u]++;
 			for (int k = j+1; k < size; k++) {
 				int v = ve[i][k];
-				cuv[u][v]++;
+				cuv[u][v] ++;
 				cuv[v][u]++;
 			}
 		}
@@ -101,8 +104,8 @@ int main () {
 			}else {
 				
 				for (int k = 0; k < size; k++) {
-					
-					ranks[j] += similarity[j][k];
+					int v = ve[i][k];
+					ranks[j] += similarity[j][v];
 				}
 			}
 		}
