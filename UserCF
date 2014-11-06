@@ -1,3 +1,4 @@
+#define  _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -9,13 +10,13 @@
 #include<sstream>
 using namespace std;
 
-int cuv[10003][10003];
+double cuv[10003][10003];
 double similarity[10003][10003];
 
 const int NEWS_SIZE = 6183;
 const int USER_SIZE  = 10002;
 const int DATA_SIZE = 116225;
-const int RECOMMEND_SIZE = 5;
+const int RECOMMEND_SIZE = 7;
 const int RECOMMEND_USER = 80;
 vector<int> ve[NEWS_SIZE];
 double ranks[NEWS_SIZE];
@@ -116,8 +117,8 @@ int main () {
 				int v = ve[i][k];
 				if (u == v)
 					continue;
-				cuv[u][v]++;
-				cuv[v][u]++;
+				cuv[u][v] += 1/(log(1+size));
+				cuv[v][u] = cuv[u][v];
 			}
 		}
 	}
@@ -127,7 +128,7 @@ int main () {
 	memset (similarity, 0, sizeof(similarity));
 	for (int i = 1; i < length; i++) {
 		for (int j = i + 1; j < length; j++) {
-			similarity[i][j] = (double)cuv[i][j] / sqrt(double(user[i]*user[j]));
+			similarity[i][j] = cuv[i][j] / sqrt(double(user[i]*user[j]));
 			similarity[j][i] = similarity[i][j];
 		}
 	}
