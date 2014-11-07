@@ -1,0 +1,150 @@
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<map>
+#include<time.h>
+#include<math.h>
+#include<cmath>
+#include<algorithm>
+#include<sstream>
+#include<set>
+using namespace std;
+
+const int NEWS_SIZE = 6183;
+const int USER_SIZE  = 10002;
+const int DATA_SIZE = 116225;
+const int RECOMMEND_SIZE = 7;
+const int RECOMMEND_ITEM = 10;
+vector<int>ve[USER_SIZE];
+
+double cuv[NEWS_SIZE][NEWS_SIZE];
+double similarity[NEWS_SIZE][NEWS_SIZE];
+double ranks[NEWS_SIZE];
+double candidate[NEWS_SIZE];
+
+bool isInItem (int u, int n) {
+	int size = ve[u].size();
+	for (int i = 0; i < size; i++) {
+		if (ve[u][i] == n)
+			return true;
+	}
+	return false;
+}
+
+bool cmp(int a, int b) {
+	return ranks[a] > ranks[b] ? true : false;
+}
+
+bool cmp2 (int a, int b) {
+	return candidate[a] > candidate[b] ? true : false;
+}
+
+int main () {
+
+	memset(cuv, 0, sizeof(cuv));
+	memset(similarity, 0, sizeof(similarity));
+	//get news 
+	freopen ("title", "r", stdin);
+	map<string, int> mapNews;
+	map<int, string> reMapNews;
+	for (int i = 0; i < NEWS_SIZE; i++) {
+		string str;
+		cin >> str;
+		mapNews[str] = i;
+		reMapNews[i] = str;
+	}
+
+	// get data
+	freopen ("data.csv", "r", stdin);
+	map<string, int> mapName;
+	map<int, string> reMapName;
+	int count = 1;
+	for (int i = 0; i < DATA_SIZE; i++) {
+		string str1, str2;
+		cin >> str1 >> str2;
+		int index = mapNews[str2];
+		if (!mapName[str1]) {
+			mapName[str1] = count;
+			reMapName[count] = str1;
+			count++;
+		}
+		ve[mapName[str1]].push_back(index);
+	}
+
+	// user-news table
+	int item[NEWS_SIZE];
+	memset(item, 0, sizeof(item));
+	for (int i = 1; i < USER_SIZE; i++) {
+		int size = ve[i].size();
+		for (int j = 0; j < size; j++) {
+			int u = ve[i][j];
+			item[u]++;
+			for (int k = j+1; k < size; k++) {
+				int v = ve[i][k];
+				cuv[u][v] += 1/(log(double(1+size)));
+				cuv[v][u] += 1/(log(double(1 + size)));
+			}
+		}
+	}
+
+	// similarity matrix
+	double max[NEWS_SIZE] = {0.};
+	for (int i = 0; i < NEWS_SIZE; i++) {
+		for (int j = 0; j < NEWS_SIZE; j++) {
+			similarity[i][j] = (double)cuv[i][j] / sqrt(double(item[i]*item[j]));
+			if (max[i] < similarity[i][j])
+				max[i] = similarity[i][j];
+			
+		}
+	}
+
+	//recommend news
+	freopen("item_result2.csv", "w", stdout);
+	for (int i = 1; i < USER_SIZE; i++) {
+		
+		memset(ranks, 0, sizeof(ranks));
+
+		int size = ve[i].size();	
+		for (int j = 0; j < NEWS_SIZE; j++) {
+			if (isInItem(i, j)) {
+				continue;
+			}else {
+				/*
+				int max = 0;
+				for (int k = 0; k < NEWS_SIZE; k++) {
+					candidate[k] = similarity[j][k];
+					if (max < candidate[k])
+						max = candidate[k];
+				}
+				*/
+				/*
+				sort(temp, temp + NEWS_SIZE , cmp2);
+				
+				for (int t = 0; t < RECOMMEND_ITEM; t++) {
+					if (isInItem (i, t))
+						ranks[j] += similarity[j][temp[t]];
+				}
+				*/
+				for (int k = 0; k < size; k++) {
+					int v = ve[i][k];
+					ranks[j] += similarity[j][v]/max[j]; 
+				}
+				
+			}
+		}
+
+		int index[NEWS_SIZE];
+		for (int j = 0; j < NEWS_SIZE; j++) {
+			index[j] = j;
+		}
+		sort(index, index + NEWS_SIZE, cmp);
+
+		
+		string name = reMapName[i];
+		for (int j = 0; j < RECOMMEND_SIZE; j++) {
+			cout << name << "," <<reMapNews[index[j]] << endl;
+		}
+		
+	}
+}
