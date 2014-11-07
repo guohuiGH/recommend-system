@@ -16,7 +16,7 @@ double similarity[10003][10003];
 const int NEWS_SIZE = 6183;
 const int USER_SIZE  = 10002;
 const int DATA_SIZE = 116225;
-const int RECOMMEND_SIZE = 7;
+const int RECOMMEND_SIZE = 2;
 const int RECOMMEND_USER = 80;
 vector<int> ve[NEWS_SIZE];
 double ranks[NEWS_SIZE];
@@ -117,7 +117,8 @@ int main () {
 				int v = ve[i][k];
 				if (u == v)
 					continue;
-				cuv[u][v] += 1/(log(1+size));
+				//cuv[u][v] += 1/(log(double (1+size)));
+				cuv[u][v]++;
 				cuv[v][u] = cuv[u][v];
 			}
 		}
@@ -177,7 +178,6 @@ int main () {
 			cout << name << "," << reMapNews[index[j]] << endl;
 		}
 	}
-	double end = clock();
-	//cout << end - start << endl;
-	//cout << count + 1 << endl;
+//	double end = clock();
+
 }
