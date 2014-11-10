@@ -118,7 +118,8 @@ int main () {
 			if (str3 < itemTime[str1])
 				itemTime[str1] = str3;
 		}
-
+		ve[mapName[str1]].push_back(index);
+	}
 
 	// user_news table
 	int user[USER_SIZE + 1];
