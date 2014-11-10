@@ -88,21 +88,37 @@ int main () {
 	}
 
 	// get data
-	freopen ("data.csv","r", stdin);
+	freopen ("data_time.csv","r", stdin);
 	map<string, int> mapName;
 	map<int, string> reMapName;
+	map<string, string>userTime;
+	map<string, string>itemTime;
 	int count = 1;
 	for (int i = 0; i < DATA_SIZE; i++) {
-		string str1, str2;
-		cin >> str1 >> str2;
+		string str1, str2, str3;
+		cin >> str1 >> str2 >> str3;
+		
 		int index = mapNews[str2];
 		if (mapName[str1] == 0) {
 			mapName[str1] = count;
 			reMapName[count] = str1;
 			count++;
 		}
-		ve[index].push_back(mapName[str1]);
-	}
+
+		if (userTime[str1] == "")
+			userTime[str1] = str3;
+		else {
+			if (str3 < userTime[str1])
+				userTime[str1] = str3;
+		}
+
+		if (itemTime[str1] == "")
+			itemTime[str1] = str3;
+		else {
+			if (str3 < itemTime[str1])
+				itemTime[str1] = str3;
+		}
+
 
 	// user_news table
 	int user[USER_SIZE + 1];
