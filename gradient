@@ -1,0 +1,98 @@
+#include<iostream>
+#include<stdio.h>
+#include<string>
+#include<algorithm>
+#include<vector>
+#include<fstream>
+
+using namespace std;
+
+const int K = 30;
+const int USER = 24984;
+const int ITEM = 103;
+const int TIMES = 100;
+double P[USER][K];
+double Q[ITEM][K];
+double R[USER][ITEM];
+double apha = 0.001;
+double lamda = 0.05;
+vector<int>ve[USER];
+
+inline double random() {
+	return 0.02 / (1 + rand()%9) - 0.01;
+}
+
+void InitData() {
+	
+	for (int i = 0; i < USER; i++) {
+		for (int j = 0; j < K; j++) {
+			P[i][j] = random(); 
+		}
+	}
+
+	for (int i = 0; i < ITEM; i++) {
+		for (int j = 0; j < K; j++) {
+			Q[i][j] = random();
+		}
+	}
+}
+
+void InputData () {
+	freopen	("train.txt", "r", stdin);
+	int id, user_id, item_id;
+	double rating;
+	for (int i = 0; i < 1448364; i++) {
+		scanf ("%d %d %d %f", &id, &user_id, &item_id, & rating);
+		R[user_id][item_id] = rating;
+		ve[user_id].push_back(item_id);
+	}
+}
+
+double Predict (int user, int item) {
+	
+	double result = 0.;
+	for (int i = 0; i < K; i++) {
+		result += P[user][i] * Q[item][i];
+	}
+	return result;
+}
+
+void Train () {
+	
+	for (int i = 1; i < USER; i++) {
+		int size = ve[i].size();
+		for (int j = 0; j < size; j++) {
+			int it = ve[i][j];
+			double err = Predict(i, it) - R[i][it];
+
+			for (int k = 0; k < K; k++) {
+				double temp = P[i][k];
+				P[i][k] += apha* (err * Q[it][k] + lamda*P[i][k]);
+				Q[it][k] += apha * (err * temp + lamda*Q[it][k]);
+			}
+		}
+	}
+}
+
+void Test () {
+	freopen("test.txt", "r", stdin);
+	freopen ("result.csv", "w", stdout);
+	printf("id rating\n");
+	int id, user_id, item_id;
+	for (int i = 0; i < 362091; i++) {
+		scanf("%d %d %d", &id, &user_id, &item_id);
+		double result = Predict(user_id, item_id);
+		printf("%d %f", id, result);
+	}
+}
+
+int main () {
+	
+	InitData();
+	InputData();
+	for (int i = 0; i < TIMES; i++) {
+		Train();
+		cout << i << endl;
+	}
+	Test();
+}
