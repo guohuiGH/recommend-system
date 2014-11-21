@@ -10,16 +10,16 @@ using namespace std;
 const int K = 30;
 const int USER = 24984;
 const int ITEM = 103;
-const int TIMES = 100;
+const int TIMES = 3;
 double P[USER][K];
 double Q[ITEM][K];
 double R[USER][ITEM];
-double apha = 0.001;
+double apha = 0.9;
 double lamda = 0.05;
 vector<int>ve[USER];
 
 inline double random() {
-	return 0.02 / (1 + rand()%9) - 0.01;
+	return 0.05 / (1 + rand()%9) - 0.01;
 }
 
 void InitData() {
@@ -42,7 +42,7 @@ void InputData () {
 	int id, user_id, item_id;
 	double rating;
 	for (int i = 0; i < 1448364; i++) {
-		scanf ("%d %d %d %f", &id, &user_id, &item_id, & rating);
+		scanf ("%d %d %d %lf", &id, &user_id, &item_id, &rating);
 		R[user_id][item_id] = rating;
 		ve[user_id].push_back(item_id);
 	}
@@ -82,7 +82,7 @@ void Test () {
 	for (int i = 0; i < 362091; i++) {
 		scanf("%d %d %d", &id, &user_id, &item_id);
 		double result = Predict(user_id, item_id);
-		printf("%d %f", id, result);
+		printf("%d %lf\n", id, result);
 	}
 }
 
