@@ -4,17 +4,18 @@
 #include<algorithm>
 #include<vector>
 #include<fstream>
+#include<assert.h>
 
 using namespace std;
 
 const int K = 30;
 const int USER = 24984;
 const int ITEM = 103;
-const int TIMES = 3;
+const int TIMES = 200;
 double P[USER][K];
 double Q[ITEM][K];
-double R[USER][ITEM];
-double apha = 0.9;
+double R[USER][ITEM] = {0.};
+double apha = 0.01;
 double lamda = 0.05;
 vector<int>ve[USER];
 
@@ -46,6 +47,7 @@ void InputData () {
 		R[user_id][item_id] = rating;
 		ve[user_id].push_back(item_id);
 	}
+	//printf("%lf",R[8][101]);
 }
 
 double Predict (int user, int item) {
@@ -64,11 +66,20 @@ void Train () {
 		for (int j = 0; j < size; j++) {
 			int it = ve[i][j];
 			double err = Predict(i, it) - R[i][it];
-
+			/*
+			if (R[i][it] == NULL || i > 9){
+				printf("%lf\n",R[8][101]);
+				printf("%d %d\n", i, it); 
+				printf("%lf\n",R[i][it]);
+				double t = Predict(i,it);
+				
+			//	assert(false);
+			}
+			*/
 			for (int k = 0; k < K; k++) {
 				double temp = P[i][k];
-				P[i][k] += apha* (err * Q[it][k] + lamda*P[i][k]);
-				Q[it][k] += apha * (err * temp + lamda*Q[it][k]);
+				P[i][k] -= apha* (err * Q[it][k] + lamda*P[i][k]);
+				Q[it][k] -= apha * (err * temp + lamda*Q[it][k]);
 			}
 		}
 	}
@@ -77,12 +88,12 @@ void Train () {
 void Test () {
 	freopen("test.txt", "r", stdin);
 	freopen ("result.csv", "w", stdout);
-	printf("id rating\n");
+	printf("id,rating\n");
 	int id, user_id, item_id;
 	for (int i = 0; i < 362091; i++) {
 		scanf("%d %d %d", &id, &user_id, &item_id);
 		double result = Predict(user_id, item_id);
-		printf("%d %lf\n", id, result);
+		printf("%d,%lf\n", id, result);
 	}
 }
 
