@@ -1,19 +1,26 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<fstream>
 #include<map>
 #include<string>
+#include<string.h>
 using namespace std;
 
 const int SIZE = 91;
-const int BOOK_NUMBER = 1733444;
-const int BOOK_CATEGROY = 0;
+const int BOOK_NUMBER = 3132956;
+const int BOOK_CATEGROY = 38;
+const string CONTENT = "G:\\data\\DTLDownLoads\\成绩排名预测\\";
 
 int initialScore[SIZE];
 int trainScore[SIZE];
 int validationScore[SIZE];
+int bookCategory[BOOK_NUMBER];
+
+map<int, string> mapping;
 
 void InputScore () {
-	freopen("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\成绩.txt", "r", stdin);
+	string content_train_score = CONTENT + "训练\\成绩.txt";
+	freopen(content_train_score.c_str(), "r", stdin);
 	//freopen ("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\result.csv", "w", stdout);
 	
 	string t,i,re;
@@ -30,28 +37,53 @@ void InputScore () {
 	}
 }
 
-
-
-void GetProBook () {
-
-	freopen("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\图书类别.txt", "r", stdin);
-	map<int, string> ma;
+void GetBookCategory () {
+	string content_book_category = CONTENT + "图书类别.txt";
+	freopen(content_book_category.c_str(), "r", stdin);
+	
 	map<string, int> category;
-	string id, ca;
-	cin >> id >> ca;
-	int counter = 0;
-	for (int i = 0; i < BOOK_NUMBER; i++) {
-		int id;
-		string s;
-		cin >> id >> s;
+	string ids, ca;
+	cin >> ids >> ca;
+	int counter = 1;
+	int id;
+	string s;
+	while (cin >> id)
+	{
+		cin >> s;
 		if (category[s] == 0) {
 			category[s] = counter;
+			mapping[counter] = s;
 			counter++;
+		}
+		bookCategory[id] = category[s];
+	}
+	//cout << counter;
+}
+
+void GetProBook () {
+	
+	string content_train_borrow_book = CONTENT + "训练\\借书.txt";
+	freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string t;
+	string i_d;
+	string b_i;
+	string t_i;
+	cin >> t >> i_d >> b_i >> t_i;
+	int term, id, book_id, time;
+	int counter[39] = {0};
+	while (cin >> term)
+	{
+		cin >> id >> book_id >> time;
+		counter[bookCategory[book_id]]++;
+		if (term == 2)
+		{
+
 		}
 	}
 }
+
 int main () {
 	
 	//freopen ("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\result.csv", "w", stdout);
-	
+	GetProBook();
 }
