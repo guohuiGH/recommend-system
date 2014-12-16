@@ -2,32 +2,38 @@
 #include<iostream>
 #include<fstream>
 #include<map>
+#include<vector>
 #include<string>
 #include<string.h>
+#include<algorithm>
 using namespace std;
 
-const int SIZE = 91;
+const int TRAIN_SIZE = 539;
 const int BOOK_NUMBER = 3132956;
-const int BOOK_CATEGROY = 38;
-const string CONTENT = "G:\\data\\DTLDownLoads\\成绩排名预测\\";
+const int BOOK_CATEGORY = 39;
+const string CONTENT = "D:\\DTLDownLoads\\data\\成绩排名预测\\";
 
-int initialScore[SIZE];
-int trainScore[SIZE];
-int validationScore[SIZE];
+int initialScore[TRAIN_SIZE];
+int trainScore[TRAIN_SIZE];
+int validationScore[TRAIN_SIZE];
 int bookCategory[BOOK_NUMBER];
+int index[BOOK_CATEGORY];
+int counter[BOOK_CATEGORY] = {0};
+double tempScore[TRAIN_SIZE];
 
 map<int, string> mapping;
 
 void InputScore () {
 	string content_train_score = CONTENT + "训练\\成绩.txt";
-	freopen(content_train_score.c_str(), "r", stdin);
+	fstream fin(content_train_score, ios::in);
 	//freopen ("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\result.csv", "w", stdout);
 	
 	string t,i,re;
-	cin >> t >> i >> re;
-	for (int i = 0; i < 3*SIZE; i++) {
-		int term, id, so;
-		cin >> term >> id >> so;
+	fin >> t >> i >> re;
+	int term, id, so;
+	while (fin >> term) {
+		
+		fin >> id >> so;
 		if (term == 1) {
 			initialScore[id] = so;
 		}else if (term == 2) {
@@ -35,21 +41,22 @@ void InputScore () {
 		}else
 			validationScore[id] = so;
 	}
+	fin.close();
 }
 
 void GetBookCategory () {
 	string content_book_category = CONTENT + "图书类别.txt";
-	freopen(content_book_category.c_str(), "r", stdin);
+	fstream fin(content_book_category, ios::in);
 	
 	map<string, int> category;
 	string ids, ca;
-	cin >> ids >> ca;
+	fin >> ids >> ca;
 	int counter = 1;
 	int id;
 	string s;
-	while (cin >> id)
+	while (fin >> id)
 	{
-		cin >> s;
+		fin >> s;
 		if (category[s] == 0) {
 			category[s] = counter;
 			mapping[counter] = s;
@@ -57,33 +64,188 @@ void GetBookCategory () {
 		}
 		bookCategory[id] = category[s];
 	}
-	//cout << counter;
+	fin.close();
+}
+
+bool cmp (int a, int b) {
+	return counter[a] > counter[b];
 }
 
 void GetProBook () {
 	
 	string content_train_borrow_book = CONTENT + "训练\\借书.txt";
-	freopen(content_train_borrow_book.c_str(), "r", stdin);
+	//freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string content_train_pro_book = CONTENT + "train\\pro_book.txt";
+	fstream fin(content_train_borrow_book, ios::in);
+	fstream fout(content_train_pro_book, ios::out);
 	string t;
 	string i_d;
 	string b_i;
 	string t_i;
-	cin >> t >> i_d >> b_i >> t_i;
-	int term, id, book_id, time;
-	int counter[39] = {0};
-	while (cin >> term)
-	{
-		cin >> id >> book_id >> time;
-		counter[bookCategory[book_id]]++;
-		if (term == 2)
-		{
+	fin >> t >> i_d >> b_i >> t_i;
 
+	int term, id, book_id, time;
+	
+	counter[0] = 4000;
+	
+	for (int i = 0; i < BOOK_CATEGORY; i++) {
+		index[i] = i;
+	}
+	int tt =0;
+	while (fin >> term)
+	{
+		fin >> id >> book_id >> time;
+		counter[bookCategory[book_id]]++;
+		tt++;
+	}
+	sort(index, index + BOOK_CATEGORY, cmp);
+	for (int i = 1; i < BOOK_CATEGORY; i++) {
+		fout << mapping[index[i]] <<  "\t" << counter[index[i]] << endl;
+	}
+	fin.close();
+	fout.close();
+}
+
+void LibraryTimes () {
+	string content_train_library = CONTENT + "训练\\图书馆门禁.txt";
+	string content_train_sort_library_time = CONTENT + "train\\library_time_second.txt";
+	string content_train_library_times = CONTENT + "train\\library_time.txt";
+	fstream fin(content_train_library, ios::in);
+	fstream fout(content_train_sort_library_time, ios::out);
+	fstream fout2(content_train_library_times, ios::out);
+
+	vector<int> ve[TRAIN_SIZE];
+	string l_t;
+	string l_i;
+	string l_d;
+	string l_ti;
+	fin >> l_t >> l_i >> l_d >> l_ti;
+	
+	int term, id, date, time;
+
+	while (fin >> term) {
+		fin >> id >> date >> time;
+		if (term == 2) {
+			ve[id].push_back(date);
 		}
 	}
+	
+	int total = 0;
+	for (int i = 1; i < TRAIN_SIZE; i++) {
+		int s = ve[i].size();
+		sort(ve[i].begin(), ve[i].end());
+		fout2 << i << "\t" << s << endl;
+		for (int j = 0; j < s; j++) {
+			fout << i << "\t" << ve[i][j] << endl;
+		}
+		total += s;
+	}
+	fin.close();
+	fout.close();
+	int average = total/(TRAIN_SIZE-1);
+	fout2 << "0\t" << average << endl;
+	fout2.close();
+}
+
+void GetProNumber () {
+	string content_train_borrow_book = CONTENT + "训练\\借书.txt";
+	//freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string content_train_pro_book_number = CONTENT + "train\\pro_book_number.txt";
+	fstream fin(content_train_borrow_book, ios::in);
+	fstream fout(content_train_pro_book_number, ios::out);
+	string t;
+	string i_d;
+	string b_i;
+	string t_i;
+	fin >> t >> i_d >> b_i >> t_i;
+
+	int pro_book_counter[TRAIN_SIZE] = {0};
+	int term, id, book_id, time;
+	while (fin >> term) {
+		fin >> id >> book_id >> time;
+		if (term == 2) {
+			string s = mapping[bookCategory[book_id]];
+			if ( s == "TP") {
+				pro_book_counter[id]++;
+			}	
+		}
+	}
+
+	int total = 0;
+	for (int i = 1; i < TRAIN_SIZE; i++) {
+		fout << i << "\t" << pro_book_counter[i] << endl;
+		total +=  pro_book_counter[i];
+	}
+	cout << total << endl;
+}
+
+bool cmp3(int a, int b) {
+	return tempScore[a] < tempScore[b];
+}
+
+void train () {
+	InputScore();
+	GetBookCategory();
+	GetProNumber();
+	LibraryTimes(); 
+
+	int tempTimes[TRAIN_SIZE];
+	string content_train_library_times = CONTENT + "train\\library_time.txt";
+	fstream fin1(content_train_library_times, ios::in);
+	int id, times;
+	while (fin1 >> id) {
+		fin1 >> times;
+		tempTimes[id] = times;
+	}
+	fin1.close();
+
+	int tempNumber[TRAIN_SIZE];
+	string content_train_pro_book_number = CONTENT + "train\\pro_book_number.txt";
+	fstream fin2(content_train_pro_book_number, ios::in);
+	int number;
+	while (fin2 >> id) {
+		fin2 >> number;
+		tempNumber[id] = number;
+	}
+	fin2.close();
+
+	
+	int tempPredict[TRAIN_SIZE];
+	tempPredict[0] = 0;
+	tempScore[0] = TRAIN_SIZE + 1000;
+	string content_train_result = CONTENT + "train\\result.txt";
+	fstream fout(content_train_result, ios::out);
+
+	for (int i = 1; i < TRAIN_SIZE; i++) {
+		
+		tempScore[i] = initialScore[i] - (double)tempTimes[i]*initialScore[i]/TRAIN_SIZE - tempNumber[i];
+		tempPredict[i] = i;
+
+	}
+	sort(tempPredict, tempPredict + TRAIN_SIZE, cmp3);
+
+	int predict[TRAIN_SIZE];
+	for (int i = 1; i < TRAIN_SIZE; i++) {
+		predict[tempPredict[i-1]] = i;
+	}
+
+	double result = 0.;
+	double sum = 0.;
+	for (int i = 1; i < TRAIN_SIZE; i++) {
+		sum += 6*(predict[i] - trainScore[i])*(predict[i] - trainScore[i]);
+		fout << i << "\t" <<predict[i] << endl;
+	}
+	fout.close();
+	int s = TRAIN_SIZE - 1;
+	result = 1 - sum/(s*(s*s-1));
+	cout << result << endl;
+	
 }
 
 int main () {
 	
 	//freopen ("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\result.csv", "w", stdout);
-	GetProBook();
+	
+	train();
+
 }
