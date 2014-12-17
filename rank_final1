@@ -1,0 +1,289 @@
+/*just library times and book times. best apha=0.02 betla=0.95
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<fstream>
+#include<map>
+#include<vector>
+#include<string>
+#include<string.h>
+#include<algorithm>
+using namespace std;
+
+const int TEST_SIZE = 92;
+const int BOOK_NUMBER = 3132956;
+const int BOOK_CATEGORY = 39;
+const string CONTENT = "D:\\DTLDownLoads\\data\\成绩排名预测\\";
+const int TERM_TWO_START = 224;
+const int TERM_TWO_END = 712;
+
+int initialScore[TEST_SIZE];
+int trainScore[TEST_SIZE];
+int validationScore[TEST_SIZE];
+int bookCategory[BOOK_NUMBER];
+int index[BOOK_CATEGORY];
+int counter[BOOK_CATEGORY] = {0};
+double tempScore[TEST_SIZE];
+string content_test_analysis = CONTENT + "test\\analysis.txt";
+fstream foutf(content_test_analysis, ios::out);
+
+map<int, string> mapping;
+
+void InputScore () {
+	string content_train_score = CONTENT + "测试\\成绩.txt";
+	fstream fin(content_train_score, ios::in);
+	//freopen ("D:\\DTLDownLoads\\data\\成绩排名预测\\训练\\result.csv", "w", stdout);
+	
+	string t,i,re;
+	fin >> t >> i >> re;
+	int term, id, so;
+	while (fin >> term) {
+		
+		fin >> id >> so;
+		if (term == 1) {
+			initialScore[id] = so;
+		}else if (term == 2) {
+			trainScore[id] = so;
+		}else
+			validationScore[id] = so;
+	}
+	fin.close();
+}
+
+void GetBookCategory () {
+	string content_book_category = CONTENT + "图书类别.txt";
+	fstream fin(content_book_category, ios::in);
+	
+	map<string, int> category;
+	string ids, ca;
+	fin >> ids >> ca;
+	int counter = 1;
+	int id;
+	string s;
+	while (fin >> id)
+	{
+		fin >> s;
+		if (category[s] == 0) {
+			category[s] = counter;
+			mapping[counter] = s;
+			counter++;
+		}
+		bookCategory[id] = category[s];
+	}
+	fin.close();
+}
+
+bool cmp (int a, int b) {
+	return counter[a] > counter[b];
+}
+
+void GetProBook () {
+	
+	string content_train_borrow_book = CONTENT + "测试\\借书.txt";
+	//freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string content_train_pro_book = CONTENT + "test\\pro_book.txt";
+	fstream fin(content_train_borrow_book, ios::in);
+	fstream fout(content_train_pro_book, ios::out);
+	string t;
+	string i_d;
+	string b_i;
+	string t_i;
+	fin >> t >> i_d >> b_i >> t_i;
+
+	int term, id, book_id, time;
+	
+	counter[0] = 4000;
+	
+	for (int i = 0; i < BOOK_CATEGORY; i++) {
+		index[i] = i;
+	}
+	int tt =0;
+	while (fin >> term)
+	{
+		fin >> id >> book_id >> time;
+		counter[bookCategory[book_id]]++;
+		tt++;
+	}
+	sort(index, index + BOOK_CATEGORY, cmp);
+	for (int i = 1; i < BOOK_CATEGORY; i++) {
+		fout << mapping[index[i]] <<  "\t" << counter[index[i]] << endl;
+	}
+	fin.close();
+	fout.close();
+}
+
+int ReCaculateDate(int date) {
+	int result = 0;
+	return result = (date- TERM_TWO_START+100)/100;
+}
+void LibraryTimes () {
+	string content_train_library = CONTENT + "测试\\图书馆门禁.txt";
+	string content_train_sort_library_time = CONTENT + "test\\library_time_second.txt";
+	string content_train_library_times = CONTENT + "test\\library_time.txt";
+	fstream fin(content_train_library, ios::in);
+	fstream fout(content_train_sort_library_time, ios::out);
+	fstream fout2(content_train_library_times, ios::out);
+
+	vector<int> ve[TEST_SIZE];
+	//int ve[TEST_SIZE] = {0};
+	string l_t;
+	string l_i;
+	string l_d;
+	string l_ti;
+	fin >> l_t >> l_i >> l_d >> l_ti;
+	
+	int term, id, date, time;
+	int min = 10000;
+	int max = 0;
+	while (fin >> term) {
+
+		fin >> id >> date >> time;
+		if (term == 2) {
+			//ve[id] += ReCaculateDate(date);
+			ve[id].push_back(date);
+		}
+		
+	}
+	cout << min << "\t" << max << endl;
+	int total = 0;
+	for (int i = 1; i < TEST_SIZE; i++) {
+		int s = ve[i].size();
+		sort(ve[i].begin(), ve[i].end());
+		//double s = (double)ve[i]/10;
+		fout2 << i << "\t" << s << endl;
+		for (int j = 0; j < s; j++) {
+			fout << i << "\t" << ve[i][j] << endl;
+		}
+		total += s;
+	}
+
+	fin.close();
+	fout.close();
+	int average = total/(TEST_SIZE-1);
+	fout2 << "0\t" << average << endl;
+	fout2.close();
+}
+
+void GetProNumber () {
+	string content_train_borrow_book = CONTENT + "测试\\借书.txt";
+	//freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string content_train_pro_book_number = CONTENT + "test\\pro_book_number.txt";
+	fstream fin(content_train_borrow_book, ios::in);
+	fstream fout(content_train_pro_book_number, ios::out);
+	string t;
+	string i_d;
+	string b_i;
+	string t_i;
+	fin >> t >> i_d >> b_i >> t_i;
+
+	int pro_book_counter[TEST_SIZE] = {0};
+	int term, id, book_id, time;
+	while (fin >> term) {
+		fin >> id >> book_id >> time;
+		if (term == 2) {
+			string s = mapping[bookCategory[book_id]];
+			if ( s == "F") {
+				pro_book_counter[id]++;
+			}	
+		}
+	}
+
+	int total = 0;
+	for (int i = 1; i < TEST_SIZE; i++) {
+		fout << i << "\t" << pro_book_counter[i] << endl;
+		total +=  pro_book_counter[i];
+	}
+	cout << (double)total/TEST_SIZE << endl;
+}
+
+bool cmp3(int a, int b) {
+	return tempScore[a] < tempScore[b];
+}
+
+void train (double apha, double betla) {
+	
+
+	int tempTimes[TEST_SIZE];
+	string content_train_library_times = CONTENT + "test\\library_time.txt";
+	fstream fin1(content_train_library_times, ios::in);
+	int id, times;
+	while (fin1 >> id) {
+		fin1 >> times;
+		tempTimes[id] = times;
+	}
+	fin1.close();
+
+	int tempNumber[TEST_SIZE];
+	string content_train_pro_book_number = CONTENT + "test\\pro_book_number.txt";
+	fstream fin2(content_train_pro_book_number, ios::in);
+	int number;
+	while (fin2 >> id) {
+		fin2 >> number;
+		tempNumber[id] = number;
+	}
+	fin2.close();
+
+	
+	int tempPredict[TEST_SIZE];
+	tempPredict[0] = 0;
+	tempScore[0] = TEST_SIZE + 1000;
+	string content_train_result = CONTENT + "test\\result.csv";
+	fstream fout(content_train_result, ios::out);
+
+	for (int i = 1; i < TEST_SIZE; i++) {
+		
+		tempScore[i] = initialScore[i] - apha*(double)(tempTimes[i]-tempNumber[i])*initialScore[i]/TEST_SIZE - betla*(double)tempNumber[i];
+		tempPredict[i] = i;
+
+	}
+	sort(tempPredict, tempPredict + TEST_SIZE, cmp3);
+
+	int predict[TEST_SIZE];
+	for (int i = 1; i < TEST_SIZE; i++) {
+		predict[tempPredict[i-1]] = i;
+	}
+
+	double result = 0.;
+	double sum = 0.;
+	fout << "id,rank" << endl;
+	for (int i = 1; i < TEST_SIZE; i++) {
+		sum += 6*(predict[i] - trainScore[i])*(predict[i] - trainScore[i]);
+		//fout << i << "," <<predict[i] << endl;
+	}
+	fout.close();
+	int s = TEST_SIZE - 1;
+	result = 1 - sum/(s*(s*s-1));
+	
+	
+	foutf <<result << "\t" << apha << "\t" << betla<< endl;
+	
+}
+
+int main () {
+	
+	
+	InputScore();
+	GetBookCategory();
+	GetProNumber();
+	LibraryTimes(); 
+
+	
+	double apha[100];
+	for (int i = 0; i < 100; i++) {
+		apha[i] = (double)i/50;
+	}
+	double betla[100];
+	for (int i = 0; i < 100; i++) {
+		betla[i] = (double)i/20;
+	}
+	for (int i = 0; i < 100; i++) {
+		for (int j = 0; j < 100; j++) {
+			train(apha[i],betla[j]);
+		}
+	}
+
+		foutf.close();
+		
+	//GetBookCategory ();
+	// GetProBook ();
+	// GetProNumber ();
+}
