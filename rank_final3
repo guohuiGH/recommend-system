@@ -6,20 +6,9 @@
 #include<string>
 #include<string.h>
 #include<algorithm>
+#include"predict.h"
 using namespace std;
 
-const int TEST_SIZE = 92;
-const int BOOK_NUMBER = 3132956;
-const int BOOK_CATEGORY = 39;
-const string CONTENT = "D:\\DTLDownLoads\\data\\成绩排名预测\\";
-const int TERM_TWO_START = 224;
-const int TERM_TWO_END = 712;
-const int EFFECTIVE_NUMBER = 4;
-const int ITERATIVE_TIMES = 1000;
-const double APHA_RATIO = 0.99;
-const double APHA_RATIO_ERROR = 0.00003;
-const double BETLA_RATIO = 0.99;
-const double BETLA_RATIO_ERROR = 0.00002;
 
 
 double initialScore[TEST_SIZE];
@@ -242,7 +231,6 @@ bool cmp3(int a, int b) {
 
 void train () {
 	
-
 	double tempTimes[TEST_SIZE];
 	string content_train_library_times = CONTENT + "test\\library_time.txt";
 	fstream fin1(content_train_library_times, ios::in);
@@ -275,7 +263,7 @@ void train () {
 				betla[i][j] = BETLA_RATIO * betla[i][j] - BETLA_RATIO_ERROR * error * pro_book_detail_counter[i][j];
 			}
 		}
-		initialScore[i] = tempScore[i];
+	//	initialScore[i] = tempScore[i];
 		tempPredict[i] = i;
 		
 
@@ -304,8 +292,7 @@ void train () {
 	
 }
 
-int main () {
-		
+void Test() {
 	InitialData();
 	InputScore();
 	GetBookCategory();
@@ -314,10 +301,22 @@ int main () {
 	
 	
 	for (int i = 0; i < ITERATIVE_TIMES; i++) {
+		cout << i << "\t";
 		train();
 	}
-	
+	foutf.close();
 
+	fstream fout2(content_conficient, ios::out);
+	for (int i = 1; i < TEST_SIZE; i++)
+	{
+		fout2 << i << "\t" << apha[i] << "\t" << betla[i][1] << "\t" << betla[i][2] << "\t" << betla[i][3] << endl;
+	}
+
+	fout2.close();
+}
+int mainxxx () {
+		
+	
 	/*
 	double apha[100];
 	for (int i = 0; i < 100; i++) {
@@ -333,7 +332,7 @@ int main () {
 		}
 	}
 	*/
-	foutf.close();
+	
 		
 	//GetBookCategory ();
 	// GetProBook ();
