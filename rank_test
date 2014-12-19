@@ -1,0 +1,133 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<fstream>
+#include<map>
+#include<vector>
+#include<string>
+#include<string.h>
+#include<algorithm>
+using namespace std;
+
+const int TEST_SIZE = 92;
+const int BOOK_NUMBER = 3132956;
+const int BOOK_CATEGORY = 39;
+const string CONTENT = "G:\\data\\DTLDownLoads\\成绩排名预测\\";
+const int TERM_TWO_START = 224;
+const int TERM_TWO_END = 712;
+const int EFFECTIVE_NUMBER = 4;
+const int ITERATIVE_TIMES = 40;
+const double APHA_RATIO = 0.9;
+const double APHA_RATIO_ERROR = 0.0015;
+const double BETLA_RATIO = 0.9;
+const double BETLA_RATIO_ERROR = 0.0015;
+
+double initialScore[TEST_SIZE];
+int trainScore[TEST_SIZE];
+int validationScore[TEST_SIZE];
+int bookCategory[BOOK_NUMBER];
+int index[BOOK_CATEGORY];
+int counter[BOOK_CATEGORY] = {0};
+int pro_book_detail_counter[TEST_SIZE][EFFECTIVE_NUMBER] = {0};
+double tempScore[TEST_SIZE];
+double apha[TEST_SIZE] = {0.};
+double betla[TEST_SIZE][EFFECTIVE_NUMBER] = {0.};
+string content_test_analysis = CONTENT + "test\\analysis.txt";
+fstream foutf(content_test_analysis, ios::out);
+
+string content_conficient = CONTENT + "test\\conficient.txt";
+map<int, string> mapping;
+map<string, int> proBookMapping;
+
+void PreMapping(){
+	proBookMapping["B"] = 3;
+	proBookMapping["C"] = 1;
+	proBookMapping["D"] = 1;
+	proBookMapping["F"] = 1;
+	proBookMapping["H"] = 3;
+	proBookMapping["I"] = 2;
+	proBookMapping["J"] = 2;
+	proBookMapping["K"] = 2;
+	proBookMapping["TP"] = 3;
+}
+
+void InitialData () {
+	PreMapping();
+	for (int i = 0; i < TEST_SIZE; i++) {
+		apha[i] = 0.06;
+		for (int j = 1; j < EFFECTIVE_NUMBER; j++) {
+			if (j == 2) {
+				betla[i][j] = -0.2;
+				continue;
+			}
+			if (j == 3) {
+				betla[i][j] = 0.1;
+				continue;
+			}
+			betla[i][j] = 0.2;
+		}
+	}
+}
+
+void GetBookCategory () {
+	string content_book_category = CONTENT + "图书类别.txt";
+	fstream fin(content_book_category, ios::in);
+	
+	map<string, int> category;
+	string ids, ca;
+	fin >> ids >> ca;
+	int counter = 1;
+	int id;
+	string s;
+	while (fin >> id)
+	{
+		fin >> s;
+		if (category[s] == 0) {
+			category[s] = counter;
+			mapping[counter] = s;
+			counter++;
+		}
+		bookCategory[id] = category[s];
+	}
+	fin.close();
+}
+
+bool cmp (int a, int b) {
+	return counter[a] > counter[b];
+}
+
+void GetProBook () {
+	
+	string content_train_borrow_book = CONTENT + "测试\\借书.txt";
+	//freopen(content_train_borrow_book.c_str(), "r", stdin);
+	string content_train_pro_book = CONTENT + "test\\pro_book.txt";
+	fstream fin(content_train_borrow_book, ios::in);
+	fstream fout(content_train_pro_book, ios::out);
+	string t;
+	string i_d;
+	string b_i;
+	string t_i;
+	fin >> t >> i_d >> b_i >> t_i;
+
+	int term, id, book_id, time;
+	
+	counter[0] = 4000;
+	
+	for (int i = 0; i < BOOK_CATEGORY; i++) {
+		index[i] = i;
+	}
+	//int tt =0;
+	while (fin >> term)
+	{
+		fin >> id >> book_id >> time;
+		if (term == 2) {
+			counter[bookCategory[book_id]]++;
+		}
+	//	tt++;
+	}
+	sort(index, index + BOOK_CATEGORY, cmp);
+	for (int i = 1; i < BOOK_CATEGORY; i++) {
+		fout << mapping[index[i]] <<  "\t" << counter[index[i]] << endl;
+	}
+	fin.close();
+	fout.close();
+}
