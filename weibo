@@ -1,0 +1,35 @@
+
+def formal_time(original_time):
+	time_list = original_time.split("-")
+	if len(time_list) == 3:
+		
+
+def digital_predict_data(in_file, out_file):
+	intput_file = open(in_file, "r")
+	output_file = open(out_file, "w+")
+	line = intput_file.readline().decode('utf-8')
+	#print type(line)
+	user_id = {}
+	item_id = {}
+	count_user = 0
+	count_item = 0
+	while line:
+		line_list = line.strip('\n').split('\t')
+		length = len(line_list)
+		if line_list[0] not in user_id.keys():
+			user_id[line_list[0]] = count_user
+			count_user += 1
+		if line_list[1] not in item_id.keys():
+			item_id[line_list[1]] = count_item
+			count_item += 1
+		
+		time = formal_time(line_list[2])
+	
+
+if __name__ == '__main__':
+	in_train_data = "weibo_train_data.txt"
+	in_predict_data = 'weibo_predict_data.txt'
+	out_train_data = './data/train_data'
+	out_predict_data = './data/predict_data'
+	digital_predict_data(in_train_data, out_train_data)
+	#digital_predict_data(in_predict_data, out_predict_data)
